@@ -1,5 +1,5 @@
 from time import sleep
-
+from datetime import date
 import requests
 
 from utils import get_env
@@ -19,7 +19,6 @@ class PolygonAPI:
 
     def get_stock_data(self, stock_ticker, date):
         url = f'{self.API_ENDPOINT}/open-close/{stock_ticker}/{date}'
-
         for attempt in range(self.MAX_RETRIES):
             response = requests.get(url, headers=self.headers)
 
@@ -30,7 +29,11 @@ class PolygonAPI:
                 raise Exception(f"Not found data for {stock_ticker}. This could be due to an unknown ticker, "
                                 f"a holiday, or a weekend.")
 
-            if response.status_code in [500, 502, 503, 504] + [403]:
+            if response.status_code in [403, 429]:
+                sleep(5)
+                continue
+
+            if response.status_code in [500, 502, 503, 504]:
                 sleep(1)
                 continue
 
@@ -39,6 +42,13 @@ class PolygonAPI:
 
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Fetch stock data from Polygon API.")
+    parser.add_argument('--stock_ticker', type=str, help='The stock ticker symbol.', required=False)
+    parser.add_argument('--date', type=str, help='The date in YYYY-MM-DD format.', default=f"{date.today():%Y-%m-%d}")
+    args = parser.parse_args()
+
     polygon_api = PolygonAPI()
     stock_checks = [
         ('AAPL', '2023-04-03'),  # market open
@@ -46,7 +56,7 @@ if __name__ == '__main__':
         ('AAPL', '2023-01-01'),  # holiday
         ('XYZA', '2223-04-03'),  # unknown ticker
         ('AAPL', '2223-04-55'),  # day doesn't exist
-    ]
+    ] if not args.stock_ticker else [(args.stock_ticker, args.date)]
 
     for ticker, date in stock_checks:
         try:

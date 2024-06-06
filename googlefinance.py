@@ -2,6 +2,8 @@ from selenium import webdriver
 from selenium.common import NoSuchElementException
 from selenium.webdriver.common.by import By
 
+import polygon
+
 
 class GoogleFinanceScraper:
     BASE_URL = "https://www.google.com/finance/quote/{}:NASDAQ"
@@ -52,8 +54,14 @@ class GoogleFinanceScraper:
 
 
 if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Fetch stock data from Polygon API.")
+    parser.add_argument('--stock_ticker', type=str, help='The stock ticker symbol.', required=False)
+    args = parser.parse_args()
+
     google_finance_scraper = GoogleFinanceScraper()
-    stock_checks = ["AAPL", "AMZN", "GOOGL", "DASD"]
+    stock_checks = ["AAPL", "AMZN", "GOOGL", "DASD"] if not args.stock_ticker else [args.stock_ticker]
     for ticker in stock_checks:
         try:
             stock_data = google_finance_scraper.get_stock_data(ticker)
