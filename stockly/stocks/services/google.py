@@ -1,7 +1,8 @@
 import logging
 
-from selenium.webdriver.common.by import By
+from bs4 import BeautifulSoup
 
+from stockly.logging import log_duration
 from stockly.selenium import WebDriverManager
 
 logger = logging.getLogger(__name__)
@@ -10,76 +11,12 @@ G_FINANCE_BASE_URL = "https://www.google.com/finance/quote/{}:NASDAQ"
 G_SEARCH_BASE_URL = "https://www.google.com/search?q={}"
 
 
-def get_google_stock_data(stock_ticker) -> dict:
-    url = G_FINANCE_BASE_URL.format(stock_ticker)
-    log_extra = {
-        'stock_ticker': stock_ticker,
-        'google_finance_url': url,
-    }
-    logger.info('googlefinance.scraper', extra={**log_extra})
-    try:
-        with WebDriverManager() as driver:
-            driver.get(url)
-            company_name = driver.find_element(By.CSS_SELECTOR, 'div.zzDege').text
-            stock_keys = [elm.text for elm in driver.find_elements(By.CSS_SELECTOR, 'div.mfs7Fc')]
-            stock_values = [elm.text for elm in driver.find_elements(By.CSS_SELECTOR, 'div.P6K39c')]
-            summary_box_dict = dict(zip(stock_keys, stock_values))
+def google_search_stock_parser(page_source: str):
+    soup = BeautifulSoup(page_source, 'html.parser')
 
-    except Exception as ex:
-        logger.exception('googlefinance.scraper.fail', extra={
-            **log_extra,
-            'exception': str(ex)
-        })
-        return {}
-
-    map_desired_fields = {
-        'PREVIOUS CLOSE': 'previous_close',
-        'MARKET CAP': 'market_cap',
-        'AVG VOLUME': 'avg_volume',
-        'CEO': 'ceo',
-        'HEADQUARTERS': 'headquarters'
-    }
-
-    filtered_and_renamed_dict = {
-        map_desired_fields[key]: summary_box_dict[key]
-        for key in map_desired_fields if key in summary_box_dict
-    }
-
-    stock_data_parsed = {
-        'company_code': stock_ticker,
-        'company_name': company_name,
-        **filtered_and_renamed_dict,
-    }
-
-    logger.info('googlefinance.scraper.success', extra={
-        **log_extra,
-        'data_parsed': stock_data_parsed,
-    })
-
-    return stock_data_parsed
-
-
-def get_google_stock_values(stock_ticker) -> dict:
-    url = G_SEARCH_BASE_URL.format(stock_ticker)
-    log_extra = {
-        'stock_ticker': stock_ticker,
-        'google_search_url': url,
-    }
-    logger.info('googlesearch.scraper', extra={**log_extra})
-
-    try:
-        with WebDriverManager() as driver:
-            driver.get(url)
-            stock_keys = [elm.text for elm in driver.find_elements(By.CSS_SELECTOR, 'td.JgXcPd')]
-            stock_values = [elm.text for elm in driver.find_elements(By.CSS_SELECTOR, 'td.iyjjgb')]
-            stock_data_dict = dict(zip(stock_keys, stock_values))
-
-    except Exception as ex:
-        logger.exception('googlesearch.scraper.fail', extra={
-            **log_extra,
-            'exception': str(ex)
-        })
-        return {}
+    stock_keys_elems = [elm.text for elm in soup.select('td.JgXcPd')]
+    stock_values_elems = [elm.text for elm in soup.select('td.iyjjgb')]
+    stock_data_dict = dict(zip(stock_keys_elems, stock_values_elems))
 
     map_desired_fields = {
         'Open': 'open',
@@ -97,6 +34,94 @@ def get_google_stock_values(stock_ticker) -> dict:
     return filtered_and_renamed_dict
 
 
+def google_finance_stock_parser(page_source: str):
+    soup = BeautifulSoup(page_source, 'html.parser')
+
+    company_name_elem = soup.select_one('div.zzDege')
+    company_name = company_name_elem.text if company_name_elem else ""
+
+    stock_keys_elems = [elm.text for elm in soup.select('div.mfs7Fc')]
+    stock_values_elems = [elm.text for elm in soup.select('div.P6K39c')]
+    summary_box_dict = dict(zip(stock_keys_elems, stock_values_elems))
+
+    map_desired_fields = {
+        'Previous close': 'previous_close',
+        'Market cap': 'market_cap',
+        'Avg Volume': 'avg_volume',
+        'CEO': 'ceo',
+        'Headquarters': 'headquarters',
+        'Founded': 'founded',
+        'Employees': 'employees'
+    }
+
+    filtered_and_renamed_dict = {
+        map_desired_fields[key]: summary_box_dict[key]
+        for key in map_desired_fields if key in summary_box_dict
+    }
+
+    google_finance_stock_data_parsed = {
+        'company_name': company_name,
+        **filtered_and_renamed_dict,
+    }
+    return google_finance_stock_data_parsed
+
+
+@log_duration(logger)
+def get_stock_data_from_google_finance(stock_ticker) -> dict:
+    url = G_FINANCE_BASE_URL.format(stock_ticker)
+    result = {}
+    log_extra = {
+        'stock_ticker': stock_ticker,
+        'google_finance_url': url,
+    }
+    logger.info('googlefinance.scraper', extra={**log_extra})
+    try:
+        with WebDriverManager() as driver:
+            driver.get(url)
+            html_page = driver.page_source
+
+        result = google_finance_stock_parser(html_page)
+    except Exception as ex:
+        logger.exception('googlefinance.scraper.fail', extra={
+            **log_extra,
+            'exception': str(ex)
+        })
+        return result
+
+    logger.info('googlefinance.scraper.success', extra={
+        **log_extra,
+        'google_finance_parsed': result,
+    })
+
+    return result
+
+
+@log_duration(logger)
+def get_stock_data_from_google_search(stock_ticker) -> dict:
+    url = G_SEARCH_BASE_URL.format(stock_ticker)
+    log_extra = {
+        'stock_ticker': stock_ticker,
+        'google_search_url': url,
+    }
+    logger.info('googlesearch.scraper', extra={**log_extra})
+
+    try:
+        with WebDriverManager() as driver:
+            driver.get(url)
+            html_page = driver.page_source
+
+        result = google_search_stock_parser(html_page)
+
+    except Exception as ex:
+        logger.exception('googlesearch.scraper.fail', extra={
+            **log_extra,
+            'exception': str(ex)
+        })
+        return result
+
+    return result
+
+
 if __name__ == '__main__':
     import argparse
 
@@ -107,7 +132,7 @@ if __name__ == '__main__':
     stock_checks = ["AAPL", "AMZN", "GOOGL", "DASD"] if not args.stock_ticker else [args.stock_ticker]
     for ticker in stock_checks:
         try:
-            stock_data = get_google_stock_data(ticker)
+            stock_data = get_stock_data_from_google_finance(ticker)
             print(f"Success: {stock_data}")
         except Exception as e:
             print(f"Fail: {e}")
