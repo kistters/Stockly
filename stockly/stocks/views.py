@@ -1,27 +1,44 @@
 import json
+import logging
 
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
+logger = logging.getLogger(__name__)
 
+
+@csrf_exempt
 @require_http_methods(["GET", "POST"])
-def stock_detail(request, stock_symbol: str):
+def stock_detail(request, stock_ticker: str):
     if request.method == 'GET':
+        logger.info('stock.get', extra={
+            'stock_ticker': stock_ticker,
+        })
         stock_data = {
-            'symbol': stock_symbol,
+            'symbol': stock_ticker,
         }
         return JsonResponse(stock_data)
 
     elif request.method == 'POST':
         try:
-            data = json.loads(request.body)
-            amount = data.get('amount')
+            payload = json.loads(request.body)
+            logger.info('stock.update', extra={
+                'stock_ticker': stock_ticker,
+                'payload': payload,
+            })
+
+            amount = payload.get('amount')
             if amount is None:
                 return JsonResponse({'error': 'Amount is required'}, status=400)
 
             return JsonResponse({
-                'message': f"{amount} units of stock {stock_symbol} were added to your stock record",
+                'message': f"{amount} units of stock {stock_ticker} were added to your stock record",
                 'status': 201
             }, status=201)
         except (ValueError, KeyError) as e:
+            logger.exception('stock.update.failed', extra={
+                'stock_ticker': stock_ticker,
+                'payload': request.body,
+            })
             return JsonResponse({'error': str(e)}, status=400)

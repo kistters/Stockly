@@ -6,12 +6,9 @@ API to retrieve and aggregate stock data from external sources.
 # start the project 
 using makefile to organize the common task of project 
 ```shell
-# start the proejct with docker-compose
+# to start the project with docker-compose
 $ make
-```
 
-# search by Stocks 
-```shell
-python3 polygon.py --stock_ticker AAPL
-python3 googlefinance.py --stock_ticker AAPL
+# to execute a command using the container
+$ make backend-bash
 ```

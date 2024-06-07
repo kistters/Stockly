@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 
+from stockly.logging import ExtraFormatter
+
 
 def get_env(env_key: str) -> any:
     try:
@@ -123,3 +125,49 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'with_extra': {
+            '()': ExtraFormatter,
+            'format': '{levelname} [{asctime}] {name}.{funcName} - {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'general': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'django-general.log',
+            'formatter': 'verbose',
+        },
+        'stocks': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'django-stocks.log',
+            'formatter': 'with_extra',
+        },
+    },
+    'root': {
+        'handlers': ['general'],
+        'level': 'INFO',
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['general'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'stockly.stocks': {
+            'handlers': ['stocks'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+    },
+}
