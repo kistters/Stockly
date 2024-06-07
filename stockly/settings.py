@@ -16,10 +16,12 @@ from pathlib import Path
 from stockly.logging import ExtraFormatter
 
 
-def get_env(env_key: str) -> any:
+def get_env(env_key: str,  default=None) -> any:
     try:
         return os.environ[env_key]
     except KeyError as e:
+        if default:
+            return default
         raise ValueError(f"No {env_key} found. Please set the {env_key} environment variable in the .env file.")
 
 
@@ -28,6 +30,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # environment variables
 SECRET_KEY = get_env('DJANGO_SECRET_KEY')
 POLYGON_API_KEY = get_env('POLYGON_API_KEY')
+SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://firefox:4444')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
