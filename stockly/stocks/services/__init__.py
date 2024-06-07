@@ -1,6 +1,10 @@
 import logging
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from django.conf import settings
+from django.core.cache import cache
+from django.utils import timezone
+
 from stockly.logging import log_duration
 from stockly.stocks.services.google import get_stock_data_from_google_search, get_stock_data_from_google_finance
 from stockly.stocks.services.polygon import PolygonAPI
@@ -15,6 +19,11 @@ def get_polygon_stock_data_async(stock_ticker: str):
 
 @log_duration(logger)
 def get_aggregate_stock_data(stock_ticker: str) -> dict:
+    stock_cache_key = f"{stock_ticker}:{timezone.now():%Y-%m-%d}"
+    stock_data = cache.get(stock_cache_key)
+    if stock_data:
+        return stock_data
+
     with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {
             executor.submit(get_stock_data_from_google_search, stock_ticker): 'stock_data_google_search',
@@ -40,5 +49,7 @@ def get_aggregate_stock_data(stock_ticker: str) -> dict:
         **stock_data_google_search,
         **polygon_stock_data
     }
+
+    cache.set(stock_cache_key, stock_data, timeout=settings.CACHE_TTL_STOCK)
 
     return stock_data

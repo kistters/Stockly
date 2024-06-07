@@ -10,6 +10,7 @@ selenium = "==4.21"
 django = "==5.0.6"
 gunicorn = "==22.0.0"
 beautifulsoup4 = "==4.12.3"
+django-redis = "==5.4.0"
 
 [dev-packages]
 

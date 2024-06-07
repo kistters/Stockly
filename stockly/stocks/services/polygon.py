@@ -3,6 +3,7 @@ from time import sleep
 from datetime import date
 import requests
 from django.conf import settings
+from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ class PolygonAPI:
         self.headers.update({'Authorization': f'Bearer {self.api_key}'})
 
     def get_stock_data(self, stock_ticker, check_date: date = None) -> dict:
-        date_formatted = f"{check_date:%Y-%m-%d}" if check_date else f"{date.today():%Y-%m-%d}"
+        date_formatted = f"{check_date:%Y-%m-%d}" if check_date else f"{timezone.now():%Y-%m-%d}"
         url = f'{self.API_ENDPOINT}/open-close/{stock_ticker}/{date_formatted}'
 
         log_extra = {
@@ -69,7 +70,7 @@ class PolygonAPI:
 
 if __name__ == '__main__':
     import argparse
-    from datetime import datetime
+    from datetime import datetime, date
 
     parser = argparse.ArgumentParser(description="Fetch stock data from Polygon API.")
     parser.add_argument('--stock_ticker', type=str, help='The stock ticker symbol.', required=False)

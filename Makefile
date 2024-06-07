@@ -8,3 +8,6 @@ start:
 
 backend-bash:
 	docker-compose run --rm backend bash
+
+redis-cli:
+	docker-compose run --rm redis redis-cli

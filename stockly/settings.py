@@ -19,7 +19,7 @@ from stockly.logging import ExtraFormatter
 def get_env(env_key: str,  default=None) -> any:
     try:
         return os.environ[env_key]
-    except KeyError as e:
+    except KeyError as ex:
         if default:
             return default
         raise ValueError(f"No {env_key} found. Please set the {env_key} environment variable in the .env file.")
@@ -29,8 +29,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # environment variables
 SECRET_KEY = get_env('DJANGO_SECRET_KEY')
+REDIS_CACHE_HOST = get_env('DJANGO_REDIS_CACHE_HOST', 'redis')
+REDIS_CACHE_PORT = get_env('DJANGO_REDIS_CACHE_PORT', '6379')
+
 POLYGON_API_KEY = get_env('POLYGON_API_KEY')
 SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://firefox:4444')
+
+# constants
+CACHE_TTL_STOCK = 60 * 20
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -89,6 +95,18 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Cache Redis
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': f'redis://{REDIS_CACHE_HOST}:{REDIS_CACHE_PORT}/1',
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
