@@ -1,37 +1,55 @@
 import logging
-import time
-from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from stockly.stocks.services.google import GoogleScraper
+from stockly.logging import log_duration
+from stockly.stocks.services.google import get_google_stock_data, get_google_stock_values
 from stockly.stocks.services.polygon import PolygonAPI
 
 logger = logging.getLogger(__name__)
 
 
-def get_aggregate_stock_data(stock_ticker: str) -> dict:
-    start_at = time.time()
-    google_finance_client = GoogleScraper()
-    polygon_client = PolygonAPI()
+@log_duration(logger)
+def get_google_stock_values_async(stock_ticker: str):
+    return get_google_stock_values(stock_ticker)
 
-    google_search_stock_data = google_finance_client.get_stock_values(stock_ticker=stock_ticker)
-    google_finance_stock_data = google_finance_client.get_stock_data(stock_ticker=stock_ticker)
-    polygon_stock_data = polygon_client.get_stock_data(stock_ticker=stock_ticker)
+
+@log_duration(logger)
+def get_google_stock_data_async(stock_ticker: str):
+    return get_google_stock_data(stock_ticker)
+
+
+@log_duration(logger)
+def get_polygon_stock_data_async(stock_ticker: str):
+    return PolygonAPI().get_stock_data(stock_ticker, None)
+
+
+@log_duration(logger)
+def get_aggregate_stock_data(stock_ticker: str) -> dict:
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            executor.submit(get_google_stock_values_async, stock_ticker): 'google_stock_values',
+            executor.submit(get_google_stock_data_async, stock_ticker): 'google_search_stock_data',
+            executor.submit(get_polygon_stock_data_async, stock_ticker): 'polygon_stock_data'
+        }
+
+        results = {}
+        for future in as_completed(futures):
+            task_name = futures[future]
+            try:
+                results[task_name] = future.result()
+            except Exception as e:
+                logger.error(f"Task {task_name} generated an exception: {e}")
+
+    google_stock_values = results.get('google_stock_values', {})
+    google_search_stock_data = results.get('google_search_stock_data', {})
+    polygon_stock_data = results.get('polygon_stock_data', {})
 
     stock_data = {
-        **google_finance_stock_data,
+        **google_search_stock_data,
         'stock_values': {
-            **google_search_stock_data,
+            **google_stock_values,
             **polygon_stock_data
         }
     }
-
-    end_at = time.time()
-
-    logger.info("stock_data.duration", extra={
-        "stock_ticker": stock_ticker,
-        "duration_ms": f"{(end_at - start_at) * 1000:.3f}",
-        "start_time": datetime.fromtimestamp(start_at).isoformat(),
-        "end_time": datetime.fromtimestamp(end_at).isoformat(),
-    })
 
     return stock_data

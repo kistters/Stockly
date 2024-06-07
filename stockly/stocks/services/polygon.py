@@ -19,7 +19,7 @@ class PolygonAPI:
     def _append_authorization_header(self):
         self.headers.update({'Authorization': f'Bearer {self.api_key}'})
 
-    def get_stock_data(self, stock_ticker, check_date: date = None):
+    def get_stock_data(self, stock_ticker, check_date: date = None) -> dict:
         date_formatted = f"{check_date:%Y-%m-%d}" if check_date else f"{date.today():%Y-%m-%d}"
         url = f'{self.API_ENDPOINT}/open-close/{stock_ticker}/{date_formatted}'
 

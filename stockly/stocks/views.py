@@ -17,7 +17,11 @@ def stock_detail(request, stock_ticker: str):
         logger.info('stock.get', extra={
             'stock_ticker': stock_ticker,
         })
-        stock_data = get_aggregate_stock_data(stock_ticker)
+        stock_data = get_aggregate_stock_data(stock_ticker)  # I/O
+        logger.info('stock.get.success', extra={
+            'stock_ticker': stock_ticker,
+            'stock_data': stock_data,
+        })
         return JsonResponse(stock_data)
 
     elif request.method == 'POST':
