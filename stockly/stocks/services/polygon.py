@@ -1,8 +1,7 @@
 from time import sleep
 from datetime import date
 import requests
-
-from utils import get_env
+from django.conf import settings
 
 
 class PolygonAPI:
@@ -11,7 +10,7 @@ class PolygonAPI:
     headers = {}
 
     def __init__(self):
-        self.api_key = get_env('POLYGON_API_KEY')
+        self.api_key = settings.POLYGON_API_KEY
         self._append_authorization_header()
 
     def _append_authorization_header(self):

@@ -21,14 +21,11 @@ def get_env(env_key: str) -> any:
         raise ValueError(f"No {env_key} found. Please set the {env_key} environment variable in the .env file.")
 
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
+# environment variables
 SECRET_KEY = get_env('DJANGO_SECRET_KEY')
+POLYGON_API_KEY = get_env('POLYGON_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -44,6 +41,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # internals
+    'stockly.stocks'
 ]
 
 MIDDLEWARE = [

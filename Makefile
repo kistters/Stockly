@@ -4,3 +4,6 @@ start:
 	docker-compose run --rm backend python manage.py migrate
 	#docker-compose run --rm backend python manage.py collectstatic --noinput
 	docker-compose $(COMPOSE_DEV_FILES) up --build
+
+backend-bash:
+	docker-compose run --rm backend bash
