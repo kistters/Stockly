@@ -5,8 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from stockly.stocks.services.googlefinance import GoogleScraper
-from stockly.stocks.services.polygon import PolygonAPI
+from stockly.stocks.services import get_aggregate_stock_data
 
 logger = logging.getLogger(__name__)
 
@@ -18,19 +17,7 @@ def stock_detail(request, stock_ticker: str):
         logger.info('stock.get', extra={
             'stock_ticker': stock_ticker,
         })
-        google_finance_client = GoogleScraper()
-        google_search_stock_data = google_finance_client.get_stock_values(stock_ticker=stock_ticker)
-        google_finance_stock_data = google_finance_client.get_stock_data(stock_ticker=stock_ticker)
-        polygon_client = PolygonAPI()
-        polygon_stock_data = polygon_client.get_stock_data(stock_ticker=stock_ticker)
-
-        stock_data = {
-            **google_finance_stock_data,
-            'stock_values': {
-                **google_search_stock_data,
-                **polygon_stock_data
-            }
-        }
+        stock_data = get_aggregate_stock_data(stock_ticker)
         return JsonResponse(stock_data)
 
     elif request.method == 'POST':

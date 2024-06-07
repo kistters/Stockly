@@ -10,7 +10,7 @@ class StockTests(TestCase):
         self.client = Client()
 
     def test_get_stock(self):
-        response = self.client.get(reverse('stock-detail', kwargs={'stock_symbol': 'AAPL'}))
+        response = self.client.get(reverse('stock-detail', kwargs={'stock_ticker': 'AAPL'}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {
             'symbol': 'AAPL',
@@ -18,7 +18,7 @@ class StockTests(TestCase):
 
     def test_post_add_stock_amount(self):
         response = self.client.post(
-            reverse('stock-detail', kwargs={'stock_symbol': 'AAPL'}),
+            reverse('stock-detail', kwargs={'stock_ticker': 'AAPL'}),
             data=json.dumps({'amount': 5.33}),
             content_type='application/json'
         )
@@ -30,7 +30,7 @@ class StockTests(TestCase):
 
     def test_post_invalid_data(self):
         response = self.client.post(
-            reverse('stock-detail', kwargs={'stock_symbol': 'AAPL'}),
+            reverse('stock-detail', kwargs={'stock_ticker': 'AAPL'}),
             data=json.dumps({}),
             content_type='application/json'
         )

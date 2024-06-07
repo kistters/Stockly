@@ -43,16 +43,14 @@ class PolygonAPI:
                 })
                 return {}
 
-            if response.status_code in [403, 429]:
-                logger.warning('polygonapi.retry', extra={
+            if response.status_code in [403]:
+                logger.warning('polygonapi.not_authorized', extra={
                     **log_extra,
-                    'response.status_code': response.status_code,
                     'response.message': response.json()
                 })
-                sleep(3)
-                continue
+                return {}
 
-            if response.status_code in [500, 502, 503, 504]:
+            if response.status_code in [500, 502, 503, 504] + [429]:
                 logger.warning('polygonapi.retry', extra={
 
                     'response.status_code': response.status_code,
