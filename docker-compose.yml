@@ -26,7 +26,8 @@ services:
 
   redis:
     image: redis:7.2
-    hostname: redis
+    hostname: redis_hostname
+    container_name: redis
     ports:
       - "6379:6379"
     healthcheck:
@@ -37,5 +38,19 @@ services:
     volumes:
       - redis_data:/data
 
+  postgres:
+    image: postgres:13
+    hostname: postgres_hostname
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=stockly
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+
 volumes:
   redis_data:
+  postgres_data:

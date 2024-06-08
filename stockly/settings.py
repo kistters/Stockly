@@ -29,14 +29,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # environment variables
 SECRET_KEY = get_env('DJANGO_SECRET_KEY')
-REDIS_CACHE_HOST = get_env('DJANGO_REDIS_CACHE_HOST', 'redis')
+REDIS_CACHE_HOST = get_env('DJANGO_REDIS_CACHE_HOST', 'redis_hostname')
 REDIS_CACHE_PORT = get_env('DJANGO_REDIS_CACHE_PORT', '6379')
+
+POSTGRES_HOST = get_env('DJANGO_POSTGRES_HOST', 'postgres_hostname')
+POSTGRES_PORT = get_env('DJANGO_POSTGRES_PORT', '5432')
+POSTGRES_USER = get_env('DJANGO_POSTGRES_USER', 'root')
+POSTGRES_PASSWORD = get_env('DJANGO_POSTGRES_PASSWORD', 'secret')
+POSTGRES_DATABASE = get_env('DJANGO_POSTGRES_DATABASE', 'stockly')
 
 POLYGON_API_KEY = get_env('POLYGON_API_KEY')
 SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://firefox:4444')
-
-# constants
-CACHE_TTL_STOCK = 60 * 20
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -91,8 +94,12 @@ WSGI_APPLICATION = 'stockly.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': POSTGRES_HOST,
+        'PORT': POSTGRES_PORT,
+        'USER': POSTGRES_USER,
+        'PASSWORD': POSTGRES_PASSWORD,
+        'NAME': POSTGRES_DATABASE,
     }
 }
 
@@ -192,3 +199,5 @@ LOGGING = {
         },
     },
 }
+
+TEST_RUNNER = 'django.test.runner.DiscoverRunner'

@@ -4,11 +4,12 @@ from bs4 import BeautifulSoup
 
 from stockly.logging import log_duration
 from stockly.selenium import WebDriverManager
+from stockly.stocks.utils import clean_signs
 
 logger = logging.getLogger(__name__)
 
 G_FINANCE_BASE_URL = "https://www.google.com/finance/quote/{}:NASDAQ"
-G_SEARCH_BASE_URL = "https://www.google.com/search?q={}"
+G_SEARCH_BASE_URL = "https://www.google.com/search?q={}&hl=en"
 
 
 def google_search_stock_parser(page_source: str):
@@ -59,6 +60,8 @@ def google_finance_stock_parser(page_source: str):
         for key in map_desired_fields if key in summary_box_dict
     }
 
+    clean_signs('$', filtered_and_renamed_dict, ['previous_close'])
+
     google_finance_stock_data_parsed = {
         'company_name': company_name,
         **filtered_and_renamed_dict,
@@ -79,6 +82,8 @@ def get_stock_data_from_google_finance(stock_ticker) -> dict:
         with WebDriverManager() as driver:
             driver.get(url)
             html_page = driver.page_source
+            with open('google_finance_AAPL.html', 'w') as f:
+                f.write(html_page)
 
         result = google_finance_stock_parser(html_page)
     except Exception as ex:
@@ -99,16 +104,18 @@ def get_stock_data_from_google_finance(stock_ticker) -> dict:
 @log_duration(logger)
 def get_stock_data_from_google_search(stock_ticker) -> dict:
     url = G_SEARCH_BASE_URL.format(stock_ticker)
+    result = {}
     log_extra = {
         'stock_ticker': stock_ticker,
         'google_search_url': url,
     }
     logger.info('googlesearch.scraper', extra={**log_extra})
-
     try:
         with WebDriverManager() as driver:
             driver.get(url)
             html_page = driver.page_source
+            with open('google_search_AAPL.html', 'w') as f:
+                f.write(html_page)
 
         result = google_search_stock_parser(html_page)
 
