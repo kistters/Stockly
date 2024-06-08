@@ -4,10 +4,11 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from django.core.cache import cache
 from django.utils import timezone
 
-from stockly.logging import log_duration
+from stockly.extra_logging import log_duration
 from stockly.stocks.constants import CACHE_TTL_STOCK
 from stockly.stocks.models import Stock
 from stockly.stocks.services.google import get_stock_data_from_google_search, get_stock_data_from_google_finance
+from stockly.stocks.services.marketwatch import get_stock_data_from_marketwatch
 from stockly.stocks.services.polygon import PolygonAPI
 
 logger = logging.getLogger(__name__)

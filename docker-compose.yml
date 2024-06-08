@@ -1,9 +1,9 @@
 version: "3.8"
 services:
-  firefox-standalone:
-    image: selenium/standalone-firefox:4.13.0
-    hostname: firefox
-    container_name: firefox-standalone
+  chrome-standalone:
+    image: selenium/standalone-chrome:4.13.0
+    hostname: chrome
+    container_name: chrome-standalone
     privileged: true
     shm_size: 2g
     ports:

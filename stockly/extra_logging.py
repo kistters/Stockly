@@ -1,12 +1,12 @@
-import logging
+from logging import Formatter, makeLogRecord
 import time
 from datetime import datetime
 from functools import wraps
 
-DEFAULT_RECORD_ATTRS = set(dir(logging.makeLogRecord({})))
+DEFAULT_RECORD_ATTRS = set(dir(makeLogRecord({})))
 
 
-class ExtraFormatter(logging.Formatter):
+class ExtraFormatter(Formatter):
     def format(self, record):
         these_attrs = set(dir(record))
         extra_attrs = these_attrs - DEFAULT_RECORD_ATTRS

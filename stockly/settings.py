@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 
-from stockly.logging import ExtraFormatter
 
 
 def get_env(env_key: str,  default=None) -> any:
@@ -40,6 +39,8 @@ POSTGRES_DATABASE = get_env('DJANGO_POSTGRES_DATABASE', 'stockly')
 
 POLYGON_API_KEY = get_env('POLYGON_API_KEY')
 SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://firefox:4444')
+
+SELENIUM_COOKIES_FILE_JSON = BASE_DIR / 'cookies.json'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -163,7 +164,7 @@ LOGGING = {
             'style': '{',
         },
         'with_extra': {
-            '()': ExtraFormatter,
+            '()': 'stockly.extra_logging.ExtraFormatter',
             'format': '{levelname} [{asctime}] {name}.{funcName} - {message}',
             'style': '{',
         },

@@ -2,7 +2,7 @@ import logging
 
 from bs4 import BeautifulSoup
 
-from stockly.logging import log_duration
+from stockly.extra_logging import log_duration
 from stockly.selenium import WebDriverManager
 from stockly.stocks.utils import clean_signs
 
@@ -81,11 +81,9 @@ def get_stock_data_from_google_finance(stock_ticker) -> dict:
     try:
         with WebDriverManager() as driver:
             driver.get(url)
-            html_page = driver.page_source
-            with open('google_finance_AAPL.html', 'w') as f:
-                f.write(html_page)
+            page_source = driver.page_source
 
-        result = google_finance_stock_parser(html_page)
+        result = google_finance_stock_parser(page_source)
     except Exception as ex:
         logger.exception('googlefinance.scraper.fail', extra={
             **log_extra,
@@ -113,11 +111,9 @@ def get_stock_data_from_google_search(stock_ticker) -> dict:
     try:
         with WebDriverManager() as driver:
             driver.get(url)
-            html_page = driver.page_source
-            with open('google_search_AAPL.html', 'w') as f:
-                f.write(html_page)
+            page_source = driver.page_source
 
-        result = google_search_stock_parser(html_page)
+        result = google_search_stock_parser(page_source)
 
     except Exception as ex:
         logger.exception('googlesearch.scraper.fail', extra={
