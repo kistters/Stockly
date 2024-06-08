@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.utils import timezone
 
 from stockly.logging import log_duration
+from stockly.stocks.models import Stock
 from stockly.stocks.services.google import get_stock_data_from_google_search, get_stock_data_from_google_finance
 from stockly.stocks.services.polygon import PolygonAPI
 
@@ -49,6 +50,11 @@ def get_aggregate_stock_data(stock_ticker: str) -> dict:
         **stock_data_google_search,
         **polygon_stock_data
     }
+
+    stock, _ = Stock.objects.get_or_create(
+        code=stock_ticker,
+        defaults={'company_name': stock_data.get('company_name', '')}
+    )
 
     cache.set(stock_cache_key, stock_data, timeout=settings.CACHE_TTL_STOCK)
 

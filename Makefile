@@ -11,3 +11,12 @@ backend-bash:
 
 redis-cli:
 	docker-compose run --rm redis redis-cli
+
+
+TICKER ?= AAPL
+AMOUNT ?= 196.89
+
+.PHONY: new-purchased-amount
+new-purchased-amount:
+	@echo "POST request new purchased amount of ${AMOUNT} for TICKER=${TICKER} to backend."
+	./post_request.sh purchased_amount "${TICKER}" "${AMOUNT}"
