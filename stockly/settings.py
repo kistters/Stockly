@@ -43,7 +43,7 @@ SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://chrome:4444')
 SELENIUM_COOKIES_FILE_JSON = BASE_DIR / 'cookies.json'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = bool(get_env('DJANGO_DEBUG', 0))
 
 ALLOWED_HOSTS = ["*"]
 

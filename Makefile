@@ -6,6 +6,9 @@ start:
 	#docker-compose run --rm backend python manage.py collectstatic --noinput
 	docker-compose $(COMPOSE_DEV_FILES) up
 
+test:
+	docker-compose run --rm backend python manage.py test --keepdb --verbosity 3
+
 backend-bash:
 	docker-compose run --rm backend bash
 
