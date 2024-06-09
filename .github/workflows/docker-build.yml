@@ -13,5 +13,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - name: List directory contents (for debugging)
+        run: ls -la
+
+      - name: Copy example .env to .env
+        run: cp .env.example .env
+
       - name: Build
         run: docker-compose build
