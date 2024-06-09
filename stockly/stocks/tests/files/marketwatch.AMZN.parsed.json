@@ -1,0 +1,92 @@
+{
+  "company_name": "Amazon.com Inc.",
+  "performance": {
+    "five_days": "4.45%",
+    "one_month": "-1.70%",
+    "three_months": "5.10%",
+    "year_to_date": "21.30%",
+    "one_year": "49.32%"
+  },
+  "competitors": [
+    {
+      "ticker": "AAPL",
+      "company_name": "Apple Inc.",
+      "market_cap": {
+        "value": "2.98T",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "company_name": "Microsoft Corp.",
+      "market_cap": {
+        "value": "3.16T",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "GOOG",
+      "company_name": "Alphabet Inc. Cl C",
+      "market_cap": {
+        "value": "2.19T",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "GOOGL",
+      "company_name": "Alphabet Inc. Cl A",
+      "market_cap": {
+        "value": "2.19T",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "META",
+      "company_name": "Meta Platforms Inc.",
+      "market_cap": {
+        "value": "1.25T",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "WMT",
+      "company_name": "Walmart Inc.",
+      "market_cap": {
+        "value": "541.22B",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "NFLX",
+      "company_name": "Netflix Inc.",
+      "market_cap": {
+        "value": "279.49B",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "DIS",
+      "company_name": "Walt Disney Co.",
+      "market_cap": {
+        "value": "184.51B",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "COST",
+      "company_name": "Costco Wholesale Corp.",
+      "market_cap": {
+        "value": "373.71B",
+        "currency": "$"
+      }
+    },
+    {
+      "ticker": "CVS",
+      "company_name": "CVS Health Corp.",
+      "market_cap": {
+        "value": "76.5B",
+        "currency": "$"
+      }
+    }
+  ]
+}

@@ -33,12 +33,12 @@ REDIS_CACHE_PORT = get_env('DJANGO_REDIS_CACHE_PORT', '6379')
 
 POSTGRES_HOST = get_env('DJANGO_POSTGRES_HOST', 'postgres_hostname')
 POSTGRES_PORT = get_env('DJANGO_POSTGRES_PORT', '5432')
-POSTGRES_USER = get_env('DJANGO_POSTGRES_USER', 'root')
+POSTGRES_USER = get_env('DJANGO_POSTGRES_USER', 'postgres')
 POSTGRES_PASSWORD = get_env('DJANGO_POSTGRES_PASSWORD', 'secret')
 POSTGRES_DATABASE = get_env('DJANGO_POSTGRES_DATABASE', 'stockly')
 
 POLYGON_API_KEY = get_env('POLYGON_API_KEY')
-SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://firefox:4444')
+SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://chrome:4444')
 
 SELENIUM_COOKIES_FILE_JSON = BASE_DIR / 'cookies.json'
 
@@ -200,5 +200,3 @@ LOGGING = {
         },
     },
 }
-
-TEST_RUNNER = 'django.test.runner.DiscoverRunner'

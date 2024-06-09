@@ -7,8 +7,7 @@ from django.utils import timezone
 from stockly.extra_logging import log_duration
 from stockly.stocks.constants import CACHE_TTL_STOCK
 from stockly.stocks.models import Stock
-from stockly.stocks.services.google import get_stock_data_from_google_search, get_stock_data_from_google_finance
-from stockly.stocks.services.marketwatch import get_stock_data_from_marketwatch
+from stockly.stocks.services.marketwatch import fetch_stock_data_from_marketwatch, marketwatch_stock_parser
 from stockly.stocks.services.polygon import PolygonAPI
 
 logger = logging.getLogger(__name__)
@@ -16,21 +15,25 @@ logger = logging.getLogger(__name__)
 
 @log_duration(logger)
 def get_polygon_stock_data_async(stock_ticker: str):
-    return PolygonAPI().get_stock_data(stock_ticker, None)
+    return PolygonAPI().get_stock_data(stock_ticker, timezone.now().date())
+
+
+@log_duration(logger)
+def get_marketwatch_stock_data_async(stock_ticker: str):
+    return marketwatch_stock_parser(fetch_stock_data_from_marketwatch(stock_ticker))
 
 
 @log_duration(logger)
 def get_aggregate_stock_data(stock_ticker: str) -> dict:
     stock_cache_key = f"{stock_ticker}:{timezone.now():%Y-%m-%d}"
-    stock_data = cache.get(stock_cache_key)
-    if stock_data and False:
-        return stock_data
+    stock_cached_data = cache.get(stock_cache_key)
+    if stock_cached_data:
+        return stock_cached_data
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         futures = {
-            executor.submit(get_stock_data_from_google_search, stock_ticker): 'stock_data_google_search',
-            executor.submit(get_stock_data_from_google_finance, stock_ticker): 'stock_data_google_finance',
-            executor.submit(get_polygon_stock_data_async, stock_ticker): 'polygon_stock_data'
+            executor.submit(get_marketwatch_stock_data_async, stock_ticker): 'stock_data_marketwatch',
+            executor.submit(get_polygon_stock_data_async, stock_ticker): 'stock_data_polygon'
         }
 
         results = {}
@@ -41,16 +44,16 @@ def get_aggregate_stock_data(stock_ticker: str) -> dict:
             except Exception as e:
                 logger.error(f"Task {task_name} generated an exception: {e}")
 
-    stock_data_google_search = results.get('stock_data_google_search', {})
-    stock_data_google_finance = results.get('stock_data_google_finance', {})
-    polygon_stock_data = results.get('polygon_stock_data', {})
+    stock_data_marketwatch = results.get('stock_data_marketwatch', {})
+    polygon_stock_data = results.get('stock_data_polygon', {})
 
     stock_data = {
-        'company_code': stock_ticker,
-        **stock_data_google_finance,
-        **stock_data_google_search,
-        **polygon_stock_data
+        **stock_data_marketwatch,
     }
+    if polygon_stock_data:
+        stock_data.update({
+            'stock_values': polygon_stock_data
+        })
 
     stock, _ = Stock.objects.get_or_create(
         code=stock_ticker,

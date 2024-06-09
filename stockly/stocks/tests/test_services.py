@@ -1,31 +1,55 @@
-import unittest
-from pathlib import Path
+from unittest import mock
 
+from django.core.cache import cache
+from django.test import TestCase
+from django.utils import timezone
+
+from stockly.stocks.services import PolygonAPI, get_aggregate_stock_data
 from stockly.stocks.services.marketwatch import marketwatch_stock_parser
+from stockly.stocks.tests.utils import load_file, day, load_json
 
 
-class TestMarketwatchStockParser(unittest.TestCase):
+class TestMarketwatchStockParser(TestCase):
+
+    def test_marketwatch_stock_parser_success(self):
+        page_source = load_file('marketwatch.AMZN.html')
+        parsed_data = marketwatch_stock_parser(page_source)
+        expected = load_json('marketwatch.AMZN.parsed.json')
+        self.assertEqual(parsed_data, expected)
+
+
+class PolygonTestCase(TestCase):
 
     def setUp(self):
-        # Load the HTML file
-        test_dir = Path(__file__).parent / 'test'
-        html_file_path = test_dir / 'example.html'
-        with open(html_file_path, 'r', encoding='utf-8') as file:
-            self.page_source = file.read()
+        self.polygon_api = PolygonAPI()
 
-    def test_marketwatch_stock_parser(self):
-        # Call the method
-        result = marketwatch_stock_parser(self.page_source)
-
-        # Example of how you might structure your assertions
-        # Update the expected list with the actual expected values from the example.html
-        expected_keys = ['Example Key 1', 'Example Key 2']
-        expected_values = ['Example Value 1', 'Example Value 2']
-        expected_result = {'list': expected_keys + expected_values}
-
-        # Perform the assertions
-        self.assertEqual(result, expected_result)
+    @mock.patch.object(PolygonAPI, '_call')
+    def test_get_stock_data_success(self, mock_call):
+        mock_call.return_value = load_json('polygon.AMZN.json')
+        result = self.polygon_api.get_stock_data(stock_ticker="AMZN", target_date=day('2024-06-08'))
+        expected = {
+            'close': 185.12,
+            'high': 186.2,
+            'low': 182.3,
+            'open': 184.66
+        }
+        self.assertEqual(result, expected)
 
 
-if __name__ == '__main__':
-    unittest.main()
+@mock.patch.object(PolygonAPI, '_call', new_callable=lambda: mock.Mock(return_value=load_json('polygon.AMZN.json')))
+@mock.patch('stockly.stocks.services.fetch_stock_data_from_marketwatch',
+            new_callable=lambda: mock.Mock(return_value=load_file('marketwatch.AMZN.html')))
+class ServicesStockTestCase(TestCase):
+    def setUp(self):
+        cache.clear()
+
+    def test_get_aggregate_stock_data_ok(self, marketwatch_mock_fetch, polygon_mock_call):
+        result = get_aggregate_stock_data(stock_ticker="AMZN")
+        expected = load_json('aggregate.AMZN.json')
+        self.assertEqual(result, expected)
+
+    def test_get_aggregate_stock_data_cache(self, marketwatch_mock_fetch, polygon_mock_call):
+        get_aggregate_stock_data(stock_ticker="AMZN")
+        expected = load_json('aggregate.AMZN.json')
+        stock_cached_data = cache.get(f"AMZN:{timezone.now():%Y-%m-%d}")
+        self.assertEqual(stock_cached_data, expected)

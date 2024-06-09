@@ -1,9 +1,7 @@
 import logging
-from time import sleep
 from datetime import date
 import requests
 from django.conf import settings
-from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -14,81 +12,47 @@ class PolygonAPI:
     headers = {}
 
     def __init__(self):
-        self.api_key = settings.POLYGON_API_KEY
-        self._append_authorization_header()
-
-    def _append_authorization_header(self):
-        self.headers.update({'Authorization': f'Bearer {self.api_key}'})
-
-    def get_stock_data(self, stock_ticker, check_date: date = None) -> dict:
-        date_formatted = f"{check_date:%Y-%m-%d}" if check_date else f"{timezone.now():%Y-%m-%d}"
-        url = f'{self.API_ENDPOINT}/open-close/{stock_ticker}/{date_formatted}'
-
-        log_extra = {
-            'stock_ticker': stock_ticker,
-            'date_formatted': date_formatted,
-            'endpoint': url,
-        }
-        logger.info('polygonapi.call', extra={**log_extra})
-
-        for attempt in range(self.MAX_RETRIES):
-            response = requests.get(url, headers=self.headers)
-
-            if response.status_code == 200:
-                return response.json()
-
-            if response.status_code in [404]:
-                logger.warning('polygonapi.404', extra={
-                    **log_extra,
-                    'internal': "This could be due to an unknown ticker a holiday, or a weekend"
-                })
-                return {}
-
-            if response.status_code in [403]:
-                logger.warning('polygonapi.not_authorized', extra={
-                    **log_extra,
-                    'response.message': response.json()
-                })
-                return {}
-
-            if response.status_code in [500, 502, 503, 504] + [429]:
-                logger.warning('polygonapi.retry', extra={
-
-                    'response.status_code': response.status_code,
-                    'response.message': response.json()
-                })
-                sleep(1)
-                continue
-
-        logger.warning("polygonapi.fetch.error.max_retries", extra={
-            **log_extra,
-            'internal': f"max_retries of {self.MAX_RETRIES} and no data fetched."
+        self.headers.update({
+            'Authorization': f'Bearer {settings.POLYGON_API_KEY}'
         })
 
-        return {}
-
-
-if __name__ == '__main__':
-    import argparse
-    from datetime import datetime, date
-
-    parser = argparse.ArgumentParser(description="Fetch stock data from Polygon API.")
-    parser.add_argument('--stock_ticker', type=str, help='The stock ticker symbol.', required=False)
-    parser.add_argument('--date', type=str, help='The date in YYYY-MM-DD format.', default=f"{date.today():%Y-%m-%d}")
-    args = parser.parse_args()
-
-    polygon_api = PolygonAPI()
-    stock_checks = [
-        ('AAPL', '2023-04-03'),  # market open
-        ('AAPL', '2023-05-07'),  # Sunday
-        ('AAPL', '2023-01-01'),  # holiday
-        ('XYZA', '2223-04-03'),  # unknown ticker
-    ] if not args.stock_ticker else [(args.stock_ticker, args.date)]
-
-    for ticker, date_string in stock_checks:
+    def _call(self, method, url, attempt=0):
         try:
-            day = datetime.strptime(date_string, '%Y-%m-%d').date()
-            stock_data = polygon_api.get_stock_data(ticker, day)
-            print(f"Success: {stock_data}")
-        except Exception as e:
-            print(f"Fail: {e}")
+            response = getattr(requests, method)(url, headers=self.headers, timeout=15, verify=False)
+            response.raise_for_status()
+            return response.json()
+        except requests.HTTPError as ex:
+
+            if ex.response.status_code in [403]:
+                logger.info(f'polygonapi.{method}.fail', extra={
+                    'url': url,
+                    'error': ex.response.json()
+                })
+                return {}
+
+            if attempt > self.MAX_RETRIES:
+                return {}
+
+            return self._call(method, url, attempt=attempt + 1)
+
+    def get_stock_data(self, stock_ticker, target_date: date = None) -> dict:
+        url = f'{self.API_ENDPOINT}/open-close/{stock_ticker}/{target_date:%Y-%m-%d}'
+        logger.info('polygonapi.call.start', extra={
+            'stock_ticker': stock_ticker,
+            'url': url,
+        })
+
+        response_json = self._call('get', url)
+
+        logger.info('polygonapi.get.success', extra={
+            'stock_ticker': stock_ticker,
+            'url': url,
+            'response': response_json,
+        })
+
+        filtered_dict = {
+            key: value for key, value in response_json.items()
+            if key in ['open', 'high', 'low', 'close']
+        }
+
+        return filtered_dict
