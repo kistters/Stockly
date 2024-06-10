@@ -174,35 +174,34 @@ LOGGING = {
         },
     },
     'handlers': {
-        'general': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'django-general.log',
-            'formatter': 'verbose',
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
             'filters': ['correlation_id']
         },
-        'stocks': {
+        'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'django-stocks.log',
+            'filename': 'django.log',
             'formatter': 'with_extra',
             'filters': ['correlation_id']
         },
     },
     'root': {
-        'handlers': ['general'],
+        'handlers': ['console'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['general'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
-        'stockly.stocks': {
-            'handlers': ['stocks'],
+        'stockly': {
+            'handlers': ['file'],
             'level': 'INFO',
             'propagate': False,
-        },
+        }
     },
 }

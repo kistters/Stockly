@@ -23,7 +23,7 @@ def log_duration(logger):
             result = func(*args, **kwargs)
             end_time = time.time()
             duration = end_time - start_time
-            logger.info(f"{func.__name__}.duration", extra={
+            logger.debug(f"{func.__name__}.duration", extra={
                 "duration_ms": f"{duration * 1000:.3f}",
                 "start_time": datetime.fromtimestamp(start_time).isoformat(),
                 "end_time": datetime.fromtimestamp(end_time).isoformat(),

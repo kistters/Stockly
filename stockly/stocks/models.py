@@ -1,5 +1,7 @@
 from django.db import models
 
+from stockly.stocks.managers import StockRecordManager
+
 
 class Stock(models.Model):
     code = models.CharField(max_length=10, unique=True)
@@ -16,6 +18,7 @@ class StockRecord(models.Model):
 
     # will be necessary associate stock records with different users in the future.
     # user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='stock_records')
+    objects = StockRecordManager()
 
     def __str__(self):
         return f"{self.stock} - {self.amount} shares"

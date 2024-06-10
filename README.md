@@ -69,6 +69,10 @@ With the docker image `selenium/standalone-chrome:4.13.0` is possible use VNC to
 
 This should help you bypass the CAPTCHA issue.
 
+<p text-align="center">
+  <img src=".github/assets/marketwatch-datadome.png" width="50%" />
+  <img src=".github/assets/cookies-file.png" width="45%" />
+</p>
 
 ## Technology Choices
 Explanation of why Django and Selenium were chosen for the project.
@@ -92,3 +96,11 @@ List future improvements and features you plan to implement.
 2. **Include Logged-in User to StockRecord:**
     - Modify the StockRecord model to associate each record with the currently logged-in user.
     - Update views, serializers, and forms to handle the new relationship.
+
+3. **Celery to async tasks:**
+    - Implement Celery to handle long-running tasks to avoid making users wait for actions that consume multiple APIs.
+    - Improve overall performance by offloading intensive operations to worker processes.
+
+4. **Sentry & New Relic Integration:**
+    - ntegrate Sentry for real-time error monitoring and reporting.
+    - Use New Relic for performance monitoring to gain insights into application performance and identify bottlenecks.

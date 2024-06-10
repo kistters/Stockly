@@ -17,21 +17,19 @@ logger = logging.getLogger(__name__)
 @require_http_methods(["GET", "POST"])
 def stock_detail(request, stock_ticker: str):
     if request.method == 'GET':
-        logger.info('stock.get', extra={
-            'stock_ticker': stock_ticker,
-        })
+        logger.info(f'stock.get.{stock_ticker}')
+
         stock_data = get_aggregate_stock_data(stock_ticker)  # I/O
-        latest_stock_record = StockRecord.objects.filter(stock__code=stock_ticker).order_by('-created_at').first()
-        stock_data.update({
+        latest_stock_record = StockRecord.objects.latest_stock_record(stock_ticker)  # I/O
+
+        logger.info(f'stock.get.{stock_ticker}.success', extra={
+            'stock_data': stock_data,
+        })
+        return JsonResponse({
+            **stock_data,
             'purchased_amount': latest_stock_record.amount if latest_stock_record else 0.0,
             'request_data': f"{latest_stock_record.created_at:%Y-%m-%d}" if latest_stock_record else None,
         })
-
-        logger.info('stock.get.success', extra={
-            'stock_ticker': stock_ticker,
-            'stock_data': stock_data,
-        })
-        return JsonResponse(stock_data)
 
     elif request.method == 'POST':
         try:
@@ -47,7 +45,7 @@ def stock_detail(request, stock_ticker: str):
         if form.is_valid():
             stock_record = form.save()
 
-            logger.info('stock.update', extra={
+            logger.info('stock.purchase', extra={
                 'stock_ticker': stock_ticker,
                 'payload': form.data,
             })
@@ -57,7 +55,7 @@ def stock_detail(request, stock_ticker: str):
             }, status=201)
 
         else:
-            logger.exception('stock.update.failed', extra={
+            logger.exception('stock.purchase.failed', extra={
                 'stock_ticker': stock_ticker,
                 'payload': form.data,
                 'errors': form.errors,
