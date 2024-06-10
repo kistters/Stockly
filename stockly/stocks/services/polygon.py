@@ -18,13 +18,13 @@ class PolygonAPI:
 
     def _call(self, method, url, attempt=0):
         try:
-            response = getattr(requests, method)(url, headers=self.headers, timeout=15, verify=False)
+            response = getattr(requests, method)(url, headers=self.headers, timeout=15)
             response.raise_for_status()
             return response.json()
         except requests.HTTPError as ex:
 
             if ex.response.status_code in [403]:
-                logger.info(f'polygonapi.{method}.fail', extra={
+                logger.critical(f'polygonapi.{method}.fail', extra={
                     'url': url,
                     'error': ex.response.json()
                 })

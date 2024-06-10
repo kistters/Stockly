@@ -47,8 +47,6 @@ DEBUG = bool(get_env('DJANGO_DEBUG', 0))
 
 ALLOWED_HOSTS = ["*"]
 
-# Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -56,11 +54,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # external
+    'django_guid',
     # internals
     'stockly.stocks'
 ]
 
 MIDDLEWARE = [
+    'django_guid.middleware.guid_middleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -158,14 +159,17 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'correlation_id': {'()': 'django_guid.log_filters.CorrelationId'},
+    },
     'formatters': {
         'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
+            'format': '{levelname} {asctime} {module} [{correlation_id}] {message}',
             'style': '{',
         },
         'with_extra': {
             '()': 'stockly.extra_logging.ExtraFormatter',
-            'format': '{levelname} [{asctime}] {name}.{funcName} - {message}',
+            'format': '{levelname} [{asctime}] {name}.{funcName} [{correlation_id}] - {message}',
             'style': '{',
         },
     },
@@ -175,12 +179,14 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': 'django-general.log',
             'formatter': 'verbose',
+            'filters': ['correlation_id']
         },
         'stocks': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': 'django-stocks.log',
             'formatter': 'with_extra',
+            'filters': ['correlation_id']
         },
     },
     'root': {

@@ -15,7 +15,7 @@ def marketwatch_stock_parser(page_source: str) -> dict:
     soup = BeautifulSoup(page_source, 'html.parser')
 
     company_name_elem = soup.select_one('h1.company__name')
-
+    company_name = company_name_elem.text if company_name_elem else ""
     # Performance
     performance_table_rows = soup.select('div.performance tr.table__row')
     performance_keys = [row.select_one('td.table__cell').text for row in performance_table_rows]
@@ -55,8 +55,14 @@ def marketwatch_stock_parser(page_source: str) -> dict:
         }
     } for company_name, ticker, market_cap_value, currency in competitors_zip_data]
 
+    if not any([company_name, performance, competitors]):
+        logger.critical(f'marketwatch.parser.fail', extra={
+            'error_message': "Check Troubleshooting section on README.md - Marketwatch CAPTCHA issue."
+        })
+        return {}
+
     return {
-        "company_name": company_name_elem.text,
+        "company_name": company_name,
         'performance': performance,
         'competitors': competitors
     }

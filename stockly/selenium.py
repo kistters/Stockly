@@ -33,7 +33,7 @@ class WebDriverManager:
                 cookies = json.load(file)
                 for cookie in cookies.get(self.domain, []):
                     self.driver.add_cookie(cookie)
-        except FileNotFoundError:
+        except (FileNotFoundError, json.JSONDecodeError):
             with open(self.json_cookies_file, 'w') as file:
                 json.dump({self.domain: []}, file)
 

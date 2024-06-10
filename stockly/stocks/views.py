@@ -16,13 +16,11 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def stock_detail(request, stock_ticker: str):
-    stock_data = get_aggregate_stock_data(stock_ticker)  # I/O
-
     if request.method == 'GET':
         logger.info('stock.get', extra={
             'stock_ticker': stock_ticker,
         })
-
+        stock_data = get_aggregate_stock_data(stock_ticker)  # I/O
         latest_stock_record = StockRecord.objects.filter(stock__code=stock_ticker).order_by('-created_at').first()
         stock_data.update({
             'purchased_amount': latest_stock_record.amount if latest_stock_record else 0.0,
@@ -41,7 +39,7 @@ def stock_detail(request, stock_ticker: str):
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
 
-        stock = get_object_or_404(Stock, code=stock_ticker)
+        stock, _ = Stock.objects.get_or_create(code=stock_ticker)
         form = StockRecordForm({
             **data_json,
             'stock': stock
