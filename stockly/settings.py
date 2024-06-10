@@ -14,8 +14,7 @@ import os
 from pathlib import Path
 
 
-
-def get_env(env_key: str,  default=None) -> any:
+def get_env(env_key: str, default=None) -> any:
     try:
         return os.environ[env_key]
     except KeyError as ex:
@@ -115,7 +114,6 @@ CACHES = {
         }
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

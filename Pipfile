@@ -16,6 +16,7 @@ fake-useragent = "==1.5.1"
 django-guid = "*"
 
 [dev-packages]
+freezegun = "*"
 
 [requires]
 python_version = "3.11"

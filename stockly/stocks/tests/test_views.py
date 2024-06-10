@@ -4,6 +4,7 @@ from unittest import mock
 from django.core.cache import cache
 from django.test import TestCase, Client
 from django.urls import reverse
+from freezegun import freeze_time
 
 from stockly.stocks.services import PolygonAPI
 from stockly.stocks.tests.utils import load_file, load_json
@@ -35,6 +36,7 @@ class StockTests(TestCase):
             'message': '5.33 units of stock AMZN were added to your stock record.'
         })
 
+    @freeze_time("2024-06-09")
     def test_get_stock_after_post_add_stock_amount(self, marketwatch_mock_fetch, polygon_mock_call):
         response = self.client.post(
             reverse('stock-detail', kwargs={'stock_ticker': 'AMZN'}),

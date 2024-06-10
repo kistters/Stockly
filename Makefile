@@ -1,4 +1,4 @@
-COMPOSE_DEV_FILES := -f docker-compose.yml # -f docker-compose.dev.yml
+COMPOSE_DEV_FILES := -f docker-compose.yml
 
 start:
 	docker-compose build
@@ -7,6 +7,7 @@ start:
 	docker-compose $(COMPOSE_DEV_FILES) up
 
 test:
+	TARGET=development docker-compose build backend
 	docker-compose run --rm backend python manage.py test --keepdb --verbosity 3
 
 backend-bash:

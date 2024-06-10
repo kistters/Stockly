@@ -15,7 +15,7 @@ services:
   backend:
     build:
       context: .
-      target: production # replace with development to use debug better
+      target: ${TARGET:-production} # Use environment variable 'TARGET', default to 'production'
     container_name: backend
     ports:
       - "8000:8080"
