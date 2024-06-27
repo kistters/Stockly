@@ -16,17 +16,20 @@ class SeleniumMiddleware:
     MAX_RETRIES = 3
     datadome_hashes = []
 
-    def __init__(self):
+    def __init__(self, selenium_grid_endpoint=None):
         chrome_options = webdriver.ChromeOptions()
         chrome_options.add_argument("--window-size=1920,1080")
-        self.driver = webdriver.Chrome(options=chrome_options)
+        if selenium_grid_endpoint:
+            self.driver = webdriver.Remote(command_executor=selenium_grid_endpoint, options=chrome_options)
+        else:
+            self.driver = webdriver.Chrome(options=chrome_options)
 
     def __del__(self):
         self.driver.quit()
 
     @classmethod
     def from_crawler(cls, crawler):
-        middleware_class = cls()
+        middleware_class = cls(selenium_grid_endpoint=crawler.settings.get('SELENIUM_GRID_ENDPOINT'))
         crawler.signals.connect(middleware_class.spider_opened, signal=signals.spider_opened)
 
         try:

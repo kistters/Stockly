@@ -4,7 +4,7 @@ ENV PYTHONUNBUFFERED 1
 ENV PIPENV_SYSTEM=1
 
 WORKDIR /app
-EXPOSE 8080
+EXPOSE 8080 6800
 
 RUN apt-get update && apt-get install -y \
     build-essential \
@@ -24,3 +24,8 @@ FROM base as production
 RUN pipenv install --deploy --ignore-pipfile
 COPY . /app/
 CMD ["gunicorn", "--workers", "4", "--threads", "2", "-b", "0.0.0.0:8080", "--timeout", "60", "stockly.wsgi:application"]
+
+FROM base as scrapyd
+RUN pipenv install --deploy --ignore-pipfile
+COPY . /app/
+CMD ["scrapyd"]

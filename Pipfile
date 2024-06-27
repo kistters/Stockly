@@ -13,8 +13,9 @@ beautifulsoup4 = "==4.12.3"
 django-redis = "==5.4.0"
 psycopg = {extras = ["binary"], version = "==3.1.19"}
 fake-useragent = "==1.5.1"
-django-guid = "*"
-scrapy = "*"
+django-guid = "==3.5.0"
+scrapy = "==2.11.2"
+scrapyd = "==1.4.3"
 
 [dev-packages]
 freezegun = "*"

@@ -29,6 +29,20 @@ services:
       redis:
         condition: service_healthy
 
+  scrapyd:
+    build:
+      context: .
+      target: 'scrapyd'
+    command: ["scrapyd"]
+    container_name: scrapyd
+    ports:
+      - "6800:6800"
+    volumes:
+      - ./.scrapyd/lib:/var/lib/scrapyd
+      - .:/app
+    environment:
+      - SELENIUM_GRID_ENDPOINT=http://chrome:4444
+
   redis:
     image: redis:7.2
     hostname: redis_hostname
@@ -64,3 +78,4 @@ services:
 volumes:
   redis_data:
   postgres_data:
+  scrapyd_data:

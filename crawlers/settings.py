@@ -6,10 +6,12 @@
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CAPTCHA_DATADOME_HASHES_FILE_PATH = BASE_DIR / '.datadome.list.txt'
+SELENIUM_GRID_ENDPOINT = os.environ.get("SELENIUM_GRID_ENDPOINT", None)
 
 BOT_NAME = "crawlers"
 
