@@ -35,8 +35,8 @@ class MarketwatchSpider(scrapy.Spider):
 
     def parse_stock_detail(self, response: Response, **kwargs: Any) -> Any:
         item = {
+            'stock_ticker': response.xpath('//span[@class="company__ticker"]/text()').get(),
             'company_name': response.xpath('//h1[@class="company__name"]/text()').get(),
-            'ticker': response.xpath('//span[@class="company__ticker"]/text()').get(),
         }
 
         if not any(value is None for value in item.values()):

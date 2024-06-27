@@ -164,3 +164,4 @@ cython_debug/
 .scrapyd/
 scrapy_result.json
 /twistd.pid
+.stocks
