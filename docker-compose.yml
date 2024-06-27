@@ -40,8 +40,8 @@ services:
     volumes:
       - ./.scrapyd/lib:/var/lib/scrapyd
       - .:/app
-    environment:
-      - SELENIUM_GRID_ENDPOINT=http://chrome:4444
+    env_file:
+      - .env
 
   redis:
     image: redis:7.2

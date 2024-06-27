@@ -27,17 +27,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # environment variables
 SECRET_KEY = get_env('DJANGO_SECRET_KEY')
-REDIS_CACHE_HOST = get_env('DJANGO_REDIS_CACHE_HOST', 'redis_hostname')
-REDIS_CACHE_PORT = get_env('DJANGO_REDIS_CACHE_PORT', '6379')
+REDIS_CACHE_HOST = get_env('REDIS_HOST', 'redis_hostname')
+REDIS_CACHE_PORT = get_env('REDIS_CACHE_PORT', '6379')
 
-POSTGRES_HOST = get_env('DJANGO_POSTGRES_HOST', 'postgres_hostname')
-POSTGRES_PORT = get_env('DJANGO_POSTGRES_PORT', '5432')
-POSTGRES_USER = get_env('DJANGO_POSTGRES_USER', 'postgres')
-POSTGRES_PASSWORD = get_env('DJANGO_POSTGRES_PASSWORD', 'secret')
-POSTGRES_DATABASE = get_env('DJANGO_POSTGRES_DATABASE', 'stockly')
+POSTGRES_HOST = get_env('POSTGRES_HOST', 'postgres_hostname')
+POSTGRES_PORT = get_env('POSTGRES_PORT', '5432')
+POSTGRES_USER = get_env('POSTGRES_USER', 'postgres')
+POSTGRES_PASSWORD = get_env('POSTGRES_PASSWORD', 'secret')
+POSTGRES_DATABASE = get_env('POSTGRES_DATABASE', 'stockly')
 
 POLYGON_API_KEY = get_env('POLYGON_API_KEY')
-SELENIUM_GRID_ENDPOINT = get_env('SELENIUM_GRID_ENDPOINT', 'http://chrome:4444')
+SCRAPYD_ENDPOINT = get_env('SCRAPYD_ENDPOINT')
 
 SELENIUM_COOKIES_FILE_JSON = BASE_DIR / 'cookies.json'
 
