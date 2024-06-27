@@ -23,7 +23,7 @@ CMD ["python", "manage.py", "runserver", "0.0.0.0:8080"]
 FROM base as production
 RUN pipenv install --deploy --ignore-pipfile
 COPY . /app/
-CMD ["gunicorn", "--workers", "4", "--threads", "2", "-b", "0.0.0.0:8080", "--timeout", "60", "stockly.wsgi:application"]
+CMD ["gunicorn", "--workers", "4", "--threads", "2", "-b", "0.0.0.0:8080", "--timeout", "60", "backoffice.wsgi:application"]
 
 FROM base as scrapyd
 RUN pipenv install --deploy --ignore-pipfile

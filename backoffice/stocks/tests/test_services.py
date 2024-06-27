@@ -4,9 +4,9 @@ from django.core.cache import cache
 from django.test import TestCase
 from django.utils import timezone
 
-from stockly.stocks.services import PolygonAPI, get_aggregate_stock_data
-from stockly.stocks.services.marketwatch import marketwatch_stock_parser
-from stockly.stocks.tests.utils import load_file, day, load_json
+from backoffice.stocks.services import PolygonAPI, get_aggregate_stock_data
+from backoffice.stocks.services.marketwatch import marketwatch_stock_parser
+from backoffice.stocks.tests.utils import load_file, day, load_json
 
 
 class TestMarketwatchStockParser(TestCase):
@@ -37,7 +37,7 @@ class PolygonTestCase(TestCase):
 
 
 @mock.patch.object(PolygonAPI, '_call', new_callable=lambda: mock.Mock(return_value=load_json('polygon.AMZN.json')))
-@mock.patch('stockly.stocks.services.fetch_stock_data_from_marketwatch',
+@mock.patch('backoffice.stocks.services.fetch_stock_data_from_marketwatch',
             new_callable=lambda: mock.Mock(return_value=load_file('marketwatch.AMZN.html')))
 class ServicesStockTestCase(TestCase):
     def setUp(self):

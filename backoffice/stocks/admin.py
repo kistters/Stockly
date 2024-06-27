@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from stockly.stocks.models import Stock, StockRecord
+from backoffice.stocks.models import Stock, StockRecord
 
 
 @admin.register(Stock)

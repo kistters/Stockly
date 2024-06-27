@@ -15,12 +15,3 @@ backend-bash:
 
 redis-cli:
 	docker-compose run --rm redis redis-cli
-
-
-.PHONY: new-purchased-amount
-new-purchased-amount:
-	./post_request.sh purchased_amount "${TICKER}" "${AMOUNT}"
-
-.PHONY: crawler
-crawler:
-	./post_request.sh request_scrapyd "${TICKER}"

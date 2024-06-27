@@ -2,7 +2,7 @@ import logging
 
 from bs4 import BeautifulSoup
 
-from stockly.selenium import WebDriverManager
+from backoffice.selenium import WebDriverManager
 
 logger = logging.getLogger(__name__)
 

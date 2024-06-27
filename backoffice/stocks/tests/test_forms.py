@@ -1,8 +1,8 @@
 from decimal import Decimal
 from django.test import TestCase
 
-from stockly.stocks.forms import StockRecordForm
-from stockly.stocks.models import Stock
+from backoffice.stocks.forms import StockRecordForm
+from backoffice.stocks.models import Stock
 
 
 class StockRecordFormTest(TestCase):

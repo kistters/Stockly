@@ -3,11 +3,11 @@ import logging
 from django.core.cache import cache
 from django.utils import timezone
 
-from stockly.extra_logging import log_duration
-from stockly.stocks.constants import CACHE_TTL_STOCK
-from stockly.stocks.models import Stock
-from stockly.stocks.services.marketwatch import fetch_stock_data_from_marketwatch, marketwatch_stock_parser
-from stockly.stocks.services.polygon import PolygonAPI
+from backoffice.extra_logging import log_duration
+from backoffice.stocks.constants import CACHE_TTL_STOCK
+from backoffice.stocks.models import Stock
+from backoffice.stocks.services.marketwatch import fetch_stock_data_from_marketwatch, marketwatch_stock_parser
+from backoffice.stocks.services.polygon import PolygonAPI
 
 logger = logging.getLogger(__name__)
 

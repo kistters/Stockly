@@ -5,9 +5,9 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
 
-from stockly.stocks.forms import StockRecordForm
-from stockly.stocks.models import StockRecord, Stock
-from stockly.stocks.services import get_aggregate_stock_data
+from backoffice.stocks.forms import StockRecordForm
+from backoffice.stocks.models import StockRecord, Stock
+from backoffice.stocks.services import get_aggregate_stock_data
 
 logger = logging.getLogger(__name__)
 

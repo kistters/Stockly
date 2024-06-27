@@ -6,12 +6,12 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from freezegun import freeze_time
 
-from stockly.stocks.services import PolygonAPI
-from stockly.stocks.tests.utils import load_file, load_json
+from backoffice.stocks.services import PolygonAPI
+from backoffice.stocks.tests.utils import load_file, load_json
 
 
 @mock.patch.object(PolygonAPI, '_call', new_callable=lambda: mock.Mock(return_value=load_json('polygon.AMZN.json')))
-@mock.patch('stockly.stocks.services.fetch_stock_data_from_marketwatch',
+@mock.patch('backoffice.stocks.services.fetch_stock_data_from_marketwatch',
             new_callable=lambda: mock.Mock(return_value=load_file('marketwatch.AMZN.html')))
 class StockTests(TestCase):
 

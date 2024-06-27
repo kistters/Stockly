@@ -1,14 +1,15 @@
 from django.db import models
 
-from stockly.stocks.managers import StockRecordManager
+from backoffice.stocks.managers import StockRecordManager
 
 
 class Stock(models.Model):
-    code = models.CharField(max_length=10, unique=True)
-    company_name = models.CharField(max_length=255)
+    ticker = models.CharField(max_length=10, unique=True)
+    json_data = models.JSONField(null=True, blank=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.company_name} ({self.code})"
+        return self.ticker
 
 
 class StockRecord(models.Model):
