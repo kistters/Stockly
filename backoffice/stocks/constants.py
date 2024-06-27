@@ -1,1 +1,0 @@
-CACHE_TTL_STOCK = 60 * 20
