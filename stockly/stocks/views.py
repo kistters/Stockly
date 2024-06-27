@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def stock_detail(request, stock_ticker: str):
+    stock_ticker = stock_ticker.upper()
     if request.method == 'GET':
         logger.info(f'stock.get.{stock_ticker}')
 
