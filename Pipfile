@@ -16,6 +16,7 @@ fake-useragent = "==1.5.1"
 django-guid = "==3.5.0"
 scrapy = "==2.11.2"
 scrapyd = "==1.4.3"
+celery = "*"
 
 [dev-packages]
 freezegun = "*"

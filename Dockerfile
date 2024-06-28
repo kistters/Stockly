@@ -29,3 +29,8 @@ FROM base as scrapyd
 RUN pipenv install --deploy --ignore-pipfile
 COPY . /app/
 CMD ["scrapyd"]
+
+FROM base as worker
+RUN pipenv install --deploy --ignore-pipfile
+COPY . /app/
+CMD ["celery", "-A", "backoffice", "worker", "--loglevel=info"]

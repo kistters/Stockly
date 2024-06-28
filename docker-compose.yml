@@ -28,6 +28,25 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      target: 'worker'
+    container_name: worker
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   scrapyd:
     build:
@@ -49,18 +68,20 @@ services:
     container_name: redis
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - redis_data:/data
 
   postgres:
     image: postgres:13
     hostname: postgres_hostname
     container_name: postgres
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -72,8 +93,22 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
     ports:
-      - "5432:5432"
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmq-diagnostics check_running && rabbitmq-diagnostics ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   redis_data:

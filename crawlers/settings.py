@@ -10,8 +10,32 @@ import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-CAPTCHA_DATADOME_HASHES_FILE_PATH = BASE_DIR / '.datadome.list.txt'
+
+
+def get_env(env_key: str, default=None) -> any:
+   try:
+      return os.environ[env_key]
+   except KeyError as ex:
+      if default:
+         return default
+      raise ValueError(f"No {env_key} found. Please set the {env_key} environment variable in the .env file.")
+
+
 SELENIUM_GRID_ENDPOINT = os.environ.get("SELENIUM_GRID_ENDPOINT", None)
+REDIS_HOST = get_env('REDIS_HOST', 'redis_hostname')
+REDIS_PORT = get_env('REDIS_PORT', '6379')
+
+CAPTCHA_DATADOME_HASHES_FILE_PATH = BASE_DIR / '.datadome.list.txt'
+
+# Celery settings
+CELERY_BROKER_URL = get_env('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = get_env('CELERY_BROKER_URL')
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
 
 BOT_NAME = "crawlers"
 
@@ -69,7 +93,7 @@ DOWNLOADER_MIDDLEWARES = {
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-   "crawlers.pipelines.CrawlersPipeline": 300,
+   "crawlers.pipelines.CeleryPipeline": 300,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import os
 from pathlib import Path
 
+from kombu import Queue, Exchange
+
 
 def get_env(env_key: str, default=None) -> any:
     try:
@@ -27,8 +29,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # environment variables
 SECRET_KEY = get_env('DJANGO_SECRET_KEY')
-REDIS_CACHE_HOST = get_env('REDIS_HOST', 'redis_hostname')
-REDIS_CACHE_PORT = get_env('REDIS_CACHE_PORT', '6379')
+
+REDIS_HOST = get_env('REDIS_HOST', 'redis_hostname')
+REDIS_PORT = get_env('REDIS_PORT', '6379')
 
 POSTGRES_HOST = get_env('POSTGRES_HOST', 'postgres_hostname')
 POSTGRES_PORT = get_env('POSTGRES_PORT', '5432')
@@ -38,10 +41,34 @@ POSTGRES_DATABASE = get_env('POSTGRES_DATABASE', 'backoffice')
 
 SCRAPYD_ENDPOINT = get_env('SCRAPYD_ENDPOINT')
 
-SELENIUM_COOKIES_FILE_JSON = BASE_DIR / 'cookies.json'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = bool(get_env('DJANGO_DEBUG', 0))
+
+# Celery settings
+CELERY_BROKER_URL = get_env('CELERY_BROKER_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
+CELERY_RESULT_BACKEND = get_env('CELERY_BROKER_URL', f'redis://{REDIS_HOST}:{REDIS_PORT}/0')
+
+BROKER_CONNECTION_TIMEOUT = 10
+CELERY_QUEUES = [
+    Queue(
+        'default',
+        Exchange('default'),
+        routing_key='default',
+    ),
+]
+
+CELERY_TASK_PROTOCOL = 1
+CELERY_DEFAULT_QUEUE = 'default'
+CELERY_ROUTES = ({
+    'stocks.process_stock_detail_from_crawler': {'queue': 'default'},
+})
+
+
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
 
 ALLOWED_HOSTS = ["*"]
 
@@ -107,7 +134,7 @@ DATABASES = {
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': f'redis://{REDIS_CACHE_HOST}:{REDIS_CACHE_PORT}/1',
+        'LOCATION': f'redis://{REDIS_HOST}:{REDIS_PORT}/1',
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
         }
