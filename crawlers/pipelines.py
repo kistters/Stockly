@@ -4,7 +4,7 @@ from scrapy.utils.project import get_project_settings
 
 def celery_config():
     settings = get_project_settings()
-    config = {
+    return {
         'broker_url': settings.get('CELERY_BROKER_URL'),
         'result_backend': settings.get('CELERY_RESULT_BACKEND'),
         'task_serializer': settings.get('CELERY_TASK_SERIALIZER'),
@@ -12,8 +12,6 @@ def celery_config():
         'result_serializer': settings.get('CELERY_RESULT_SERIALIZER'),
         'timezone': settings.get('CELERY_TIMEZONE'),
     }
-    print(f"Celery Configuration: {config}")  # Add logging here
-    return config
 
 
 class CeleryPipeline:
