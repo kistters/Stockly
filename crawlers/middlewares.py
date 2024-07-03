@@ -2,14 +2,17 @@
 #
 # See documentation in:
 # https://docs.scrapy.org/en/latest/topics/spider-middleware.html
+import logging
+import threading
+
 from scrapy import signals
 from scrapy.exceptions import IgnoreRequest
 from scrapy.http import HtmlResponse
 from selenium import webdriver
+from selenium.common import TimeoutException
 
-
-class CaptchaRequired(Exception):
-    pass
+logger = logging.getLogger(__name__)
+thread_local = threading.local()
 
 
 class SeleniumMiddleware:
@@ -18,7 +21,12 @@ class SeleniumMiddleware:
 
     def __init__(self, selenium_grid_endpoint=None):
         chrome_options = webdriver.ChromeOptions()
-        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--window-size=1240,980")
+        chrome_options.add_experimental_option("prefs", {
+            "profile.managed_default_content_settings.images": 2,
+            "excludeSwitches": ["disable-popup-blocking"],
+        })
+
         if selenium_grid_endpoint:
             self.driver = webdriver.Remote(command_executor=selenium_grid_endpoint, options=chrome_options)
         else:
@@ -31,7 +39,7 @@ class SeleniumMiddleware:
     def from_crawler(cls, crawler):
         middleware_class = cls(selenium_grid_endpoint=crawler.settings.get('SELENIUM_GRID_ENDPOINT'))
         crawler.signals.connect(middleware_class.spider_opened, signal=signals.spider_opened)
-
+        logger.info(f'selenium.start', extra=dict(crawler))
         try:
             file_path = crawler.settings.get('CAPTCHA_DATADOME_HASHES_FILE_PATH')
             with open(file_path, 'r') as file:
@@ -46,27 +54,31 @@ class SeleniumMiddleware:
         captcha_list = ['geo.captcha-delivery.com', 'ct.captcha-delivery.com']
         for captcha in captcha_list:
             if captcha in page_source:
-                raise CaptchaRequired(f"CAPTCHA required to {request.url}")
+                return True
 
     def process_request(self, request, spider):
         if 'selenium' not in request.meta:
             return
 
+        logger.info(f'selenium.start', extra=dict(request))
+
         for _ in range(self.MAX_RETRIES):
 
+            self.driver.set_page_load_timeout(1)
             try:
                 self.driver.get(request.url)
-                page_source = self.driver.page_source
-                self.detect_captcha(page_source, request, spider)
-                return HtmlResponse(self.driver.current_url, body=page_source, encoding='utf-8', request=request)
+            except TimeoutException:
+                pass
 
-            except CaptchaRequired as e:
+            page_source = self.driver.page_source
+
+            if self.detect_captcha(page_source, request, spider):
                 captcha_cookie = self.driver.get_cookie('datadome')  # can be extended to spider
                 captcha_cookie['value'] = self.datadome_hashes.pop()
                 self.driver.add_cookie(captcha_cookie)
+                continue
 
-            except Exception as e:
-                spider.logger.exception(e)
+            return HtmlResponse(self.driver.current_url, body=page_source, encoding='utf-8', request=request)
 
         raise IgnoreRequest(f"Max retries reached for {request.url}")
 

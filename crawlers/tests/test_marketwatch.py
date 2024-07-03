@@ -1,5 +1,6 @@
 import pytest
 import scrapy
+from scrapy import Request
 from scrapy.http import HtmlResponse
 from crawlers.spiders.marketwatch import MarketwatchSpider
 from crawlers.tests.utils import load_mock_response
@@ -24,7 +25,8 @@ def test_parse_extract_next_page(spider):
 
     follow_results = list(spider.parse(response))
 
-    assert [result.url for result in follow_results if result.callback == spider.parse] == [expected_next_page]
+    assert [result.url for result in follow_results
+            if isinstance(result, Request) and result.callback == spider.parse] == [expected_next_page]
 
 
 def test_parse_extract_final_page(spider):
@@ -38,7 +40,9 @@ def test_parse_extract_final_page(spider):
     )
 
     follow_results = list(spider.parse(response))
-    assert [result.url for result in follow_results if result.callback == spider.parse] == []
+
+    assert [result.url for result in follow_results
+            if isinstance(result, Request) and result.callback == spider.parse] == []
 
 
 def test_parse_extract_stock_detail_url_list(spider):
@@ -83,6 +87,7 @@ def test_parse_extract_stock_detail_data(spider):
     stock_data = next(spider.parse_stock_detail(response))
 
     assert stock_data == {
+        'meta': 'stock_data',
         'stock_ticker': 'AMZN',
         'company_name': 'Amazon.com Inc.',
         'performance_data': {

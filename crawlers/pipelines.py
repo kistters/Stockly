@@ -1,5 +1,9 @@
+import logging
+
 from celery import Celery
 from scrapy.utils.project import get_project_settings
+
+logger = logging.getLogger(__name__)
 
 
 def celery_config():
@@ -25,6 +29,17 @@ class CeleryPipeline:
         return cls()
 
     def process_item(self, item, spider):
-        if 'stock_ticker' in dict(item).keys():
+
+        metadata = item.pop('meta')
+        if metadata == 'stock_ticker_to_process':
+            self.celery_app.send_task('stocks.crawler_stock_detail', [dict(item)])
+
+        if metadata == 'stock_data':
             self.celery_app.send_task('stocks.process_stock_detail_from_crawler', [dict(item)])
+
+        logger.info(f'crawler.sent.{metadata}.{item.get("stock_ticker")}.to_backoffice', extra={
+            'spider_name': spider.name,
+            'item': dict(item)
+        })
+
         return item

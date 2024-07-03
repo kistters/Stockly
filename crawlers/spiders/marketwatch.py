@@ -1,8 +1,11 @@
+import logging
 from typing import Any
 
 import scrapy
 from scrapy import Request
 from scrapy.http import Response
+
+logger = logging.getLogger(__name__)
 
 
 class MarketwatchSpider(scrapy.Spider):
@@ -14,6 +17,7 @@ class MarketwatchSpider(scrapy.Spider):
     def __init__(self, stock_ticker=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.stock_url = self.stock_detail_url.format(stock_ticker=stock_ticker) if stock_ticker else None
+        logger.info(f'crawler.scrape.{stock_ticker}.start', extra=kwargs)
 
     def start_requests(self):
         if self.stock_url:
@@ -26,6 +30,11 @@ class MarketwatchSpider(scrapy.Spider):
         links = response.xpath('//table[@class="table table-condensed"]//a/@href').getall()
         next_page = response.xpath('//ul[@class="pagination"]/li[last()]//a/@href').get()
 
+        logger.info(f'crawler.scrape', extra={
+            'links': links,
+            'next_page': next_page
+        })
+
         for link in links:
             stock_detail_url = link.split('?')[0]
             yield response.follow(stock_detail_url, callback=self.parse_stock_detail, meta={'selenium': True})
@@ -34,7 +43,6 @@ class MarketwatchSpider(scrapy.Spider):
             yield response.follow(next_page, self.parse, meta={'selenium': True})
 
     def parse_stock_detail(self, response: Response, **kwargs: Any) -> Any:
-
         stock_ticker = response.xpath('//span[@class="company__ticker"]/text()').get()
         company_name = response.xpath('//h1[@class="company__name"]/text()').get()
         if not stock_ticker:
@@ -77,6 +85,7 @@ class MarketwatchSpider(scrapy.Spider):
         ]
 
         yield {
+            'meta': 'stock_data',
             'stock_ticker': stock_ticker,
             'company_name': company_name,
             'performance_data': performance,
